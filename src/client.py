@@ -22,7 +22,6 @@ class Client:
 		
 		
 		Display.clear()
-		print("Welcome to the G-Force client!\n")
 		
 		try:
 			self.main()
@@ -48,16 +47,31 @@ class Client:
 		
 		
 	def main(self):		
+		error=None
 		while 1:
+			Display.clear()
+			if error: Display.error_message("Command not recognised, please try again.", error)
+			if self.connected():
+				Display.success_message("[Connected]")
+			else:
+				print("Welcome to the G-Force client!\n")
+				
 			print("Options:\n")
 			print(Display.list_to_str(Display.enum_to_list(Option)))
-			option = Display.ask_question("Select an option:")
+			option = Display.ask("Select an option:")
 			
 			try:
 				Display.clear()
 				self.options[int(option)]() 
+				answ = None
+				while (answ!="y" and answ!="Y" and answ!=""):
+					answ = Display.ask("Continue? [Y/n]")
+					print(answ)
+					if answ == "n" or answ == "N": self.exit()
+					
+				error=None
 			except Exception as e:
-				Display.manage_exception("Command not recognised, please try again.", e)
+				error = e
 				
 	
 	def connect(self):
@@ -71,19 +85,19 @@ class Client:
 		print("Sending server request...")
 		try:
 			self.socket.connect(self.server_address)
-			Display.clear()
-			print("Response:")
-			Display.success_message("DONE! Connection sucessful.")
+			
+			Display.success_message("Connection successful.")
+			return
 			
 		except TypeError as e:
-			Display.manage_exception("Invalid host or port.", e)
+			Display.error_message("Invalid host or port.", e)
 		except Exception as e:
 			if e.args[0] == 106: # [Errno 106] Transport endpoint is already connected python documentation
-				Display.manage_exception(
+				Display.error_message(
 					"REFUSED! The connection has already been established.")
 			else:
-				Display.manage_exception("Connection unsucessful.", e)
-		
+				Display.error_message("Connection unsucessful.", e)
+
 
 	def quit(self):
 		try:
@@ -91,12 +105,12 @@ class Client:
 			# Wait for server go-ahead
 			self.recv()
 			self.socket.close()
-			print("Response:")
 			Display.success_message("Server connection ended.")
 			exit(0)
 			
 		except Exception as e:
-			Display.manage_exception("Failed in quit.", e)
+			Display.error_message("Failed closing connection.", e)
+			exit(0)
 		
 	
 	

@@ -15,7 +15,7 @@ class Display:
     
     
 	@classmethod
-	def ask_question(cls, question: str=''):
+	def ask(cls, question: str=''):
 		""" Receives a question, asks it to the user and returns his answer.
 			Also catches the user's exit attempts 
 			and redirects them to the save method.
@@ -62,11 +62,7 @@ class Display:
         
         
 	@staticmethod
-	def manage_exception(response, exception="", quit=False):
-		Display.clear()
-		
-		print("Response:")
-		
+	def error_message(response, exception=""):
 		print(
 			'\033[91m' 
 			+ response 
@@ -75,7 +71,6 @@ class Display:
 			+ '\033[0m', 
 			end='\n\n'
 			)
-		if (quit): Display.exit()
 
 	
 	@staticmethod

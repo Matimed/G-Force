@@ -53,7 +53,7 @@ class Server:
 				return conn
 		
 		except Exception as e:
-			Display.manage_exception("Connection error:", e, True)
+			Display.error_message("Connection error:", e)
 		
 		
 	def quit(self):
@@ -65,7 +65,7 @@ class Server:
 
 		
 		except Exception as e:
-			Display.manage_exception("Failed to quit!", e)
+			Display.error_message("[ERROR] Failed to quit!", e)
 
 
 	def send(self, message, encode=True):
