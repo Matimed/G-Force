@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import os
 import socket
+import struct
+import sys
 from display import Display
 from client_option import Option
 
@@ -15,6 +18,7 @@ class Client:
 		
 		self.options = {
 			Option.CONNECT: self.connect,
+			Option.UPLOAD: self.upload,
 			Option.QUIT: self.quit,
 		}
 		
@@ -112,6 +116,60 @@ class Client:
 			Display.error_message("Failed closing connection.", e)
 			exit(0)
 		
+	
+	def upload(self):
+		if not self.connected():
+			Display.error_message("No connection to upload a file.")
+			return
+		
+		file_name = Display.ask("Input file name: ")
+		
+		try:
+			with open(file_name, "rb") as file:
+				try:
+					self.send("UPLOAD")
+				except Exception as e: 
+					raise Exception("CUSTOM", "Failed in send instruction.", e)
+				
+				try:
+					self.recv() # Server OK.
+					# Send file name size and file name
+					self.send(struct.pack("h", sys.getsizeof(os.path.basename(file_name))), encode=False)
+					self.send(os.path.basename(file_name))
+					self.recv()
+					self.send(struct.pack("i", os.path.getsize(file_name)), encode=False)
+				except Exception as e: 
+					raise Exception("CUSTOM", "Failed sending file details.", e)
+					
+				try:
+					# Send the file in chunks defined by BUFFER_SIZE
+					# Doing it this way allows for unlimited potential file sizes to be sent
+					print("Sending file...")
+					file_chunk = file.read(Client.BUFFER_SIZE)
+					while file_chunk:
+						self.send(file_chunk, encode=False)
+						file_chunk = file.read(Client.BUFFER_SIZE)
+				except Exception as e: 
+					raise Exception("CUSTOM", "Failed in send file.", e)
+		except Exception as e:
+			if e.args[0] == "CUSTOM":
+				Display.error_message(e.args[1], e.args[2])
+			else:
+				Display.error_message("Failed in open file.", e)
+			
+			return
+		
+		try:
+			# Get upload performance details
+			upload_time = struct.unpack("f", self.recv(4, decode=False))[0]
+			upload_size = struct.unpack("i", self.recv(4, decode=False))[0]
+			
+			Display.success_message(f"{file_name} sent successfully.")
+			print(f"Time elapsed: {upload_time}")
+			print(f"File size: {upload_size}b\n")
+		except Exception as e:
+			Display.error_message("Failed getting upload time.", e)
+			return
 	
 	
 	def send(self, message, encode=True):
