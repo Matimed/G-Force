@@ -71,9 +71,9 @@ class Client:
 
 	def quit(self):
 		try:
-			self.send(self.socket, "QUIT")
+			self.send("QUIT")
 			# Wait for server go-ahead
-			self.recv(self.socket)
+			self.recv()
 			self.socket.close()
 			print("Response:")
 			Display.success_message("Server connection ended.")
@@ -83,11 +83,20 @@ class Client:
 			Display.manage_exception("Failed in quit.", e)
 		
 	
-	def send(self, s, message): s.sendall(message.encode('utf-8'))
+	
+	def send(self, message, encode=True):
+		if encode:
+			self.socket.sendall(message.encode('utf-8'))
+		else:
+			self.socket.sendall(message)
 	
 	
-	def recv(self, s): return (s.recv(Client.BUFFER_SIZE)).decode('utf-8')
-	
+	def recv(self, size=-1, decode=True): 
+		if decode:
+			return (self.socket.recv(size if size!=-1 else Client.BUFFER_SIZE)).decode('utf-8')
+		else:
+			return (self.socket.recv(size if size!=-1 else Client.BUFFER_SIZE))
+			
 	
 if __name__=="__main__":
 	default_server_address = ('localhost', 1462) # Random magic number port.

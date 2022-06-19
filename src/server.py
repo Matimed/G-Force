@@ -25,7 +25,7 @@ class Server:
 		while True:
 			# Enter into a while loop to recieve commands from client
 			print("Waiting for instruction . . .\r", end='')
-			data = self.recv(self.client_socket)
+			data = self.recv()
 			print("                             \r", end='')
 			
 			Display.success_message(f"[RECIEVED INSTRUCTION] {data}")
@@ -58,7 +58,7 @@ class Server:
 		
 	def quit(self):
 		try:
-			self.send(self.client_socket, "1") # Send quit conformation
+			self.send("1") # Send quit conformation
 			self.client_socket.close()
 			Display.success_message("[DISCONNECTED] Connection has been closed!")
 			exit(0)
@@ -68,10 +68,18 @@ class Server:
 			Display.manage_exception("Failed to quit!", e)
 
 
-	def send(self, s, message): s.sendall(message.encode('utf-8'))
+	def send(self, message, encode=True):
+		if encode:
+			self.client_socket.sendall(message.encode('utf-8'))
+		else:
+			self.client_socket.sendall(message)
 	
 	
-	def recv(self, s): return (s.recv(Server.BUFFER_SIZE)).decode('utf-8')
+	def recv(self, size=-1, decode=True): 
+		if decode:
+			return (self.client_socket.recv(size if size!=-1 else Server.BUFFER_SIZE)).decode('utf-8')
+		else:
+			return (self.client_socket.recv(size if size!=-1 else Server.BUFFER_SIZE))
 
 
 if __name__=="__main__":
