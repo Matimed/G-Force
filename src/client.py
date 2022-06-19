@@ -27,10 +27,26 @@ class Client:
 		try:
 			self.main()
 		except KeyboardInterrupt:
-			Display.clear()
+			self.exit()
+           
+           
+	def exit(self):
+		Display.clear()
+		if self.connected():
 			Display.exit()
-           
-           
+		else: exit(0)
+
+
+	def connected(self):
+		try:
+			self.socket.getpeername()
+		except Exception as e:
+			if e.args[0] == 107: return False
+			else: raise(e)
+			
+		return True
+		
+		
 	def main(self):		
 		while 1:
 			print("Options:\n")
