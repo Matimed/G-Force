@@ -12,8 +12,9 @@ class Client:
 	
 	# Default port is a random magic number.
 	def __init__(self, server_address: tuple[str, int] = ()): 
-		self.server_address = server_address
+		self.files_path = "client_files/"
 		
+		self.server_address = server_address
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)        
 		
 		self.options = {
@@ -115,14 +116,14 @@ class Client:
 		except Exception as e:
 			Display.error_message("Failed closing connection.", e)
 			exit(0)
-		
+	
 	
 	def upload(self):
 		if not self.connected():
 			Display.error_message("No connection to upload a file.")
 			return
 		
-		file_name = Display.ask("Input file name: ")
+		file_name =  self.files_path + Display.ask("Input file name: ")
 		
 		try:
 			with open(file_name, "rb") as file:

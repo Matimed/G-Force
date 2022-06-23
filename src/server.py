@@ -11,6 +11,7 @@ class Server:
 	BUFFER_SIZE = 1024 # Standard of ftp protocol.
 	
 	def __init__(self, address: tuple[str, int] = ()): 
+		self.files_path = "server_files/"
 		self.address = address
 		self.client_socket = None
 		Display.clear()
@@ -82,7 +83,7 @@ class Server:
 		file_size = struct.unpack("i", self.recv(size=4,decode=False))[0]
 		# Initialise and enter loop to recive file content
 		start_time = time.time()
-		with open(file_name, "wb") as output_file:
+		with open(self.files_path + file_name, "wb") as output_file:
 			# This keeps track of how many bytes we have recieved, so we know when to stop the loop
 			Display.success_message(f"\t[RECIEVING FILE] File name: {file_name}")
 			bytes_recieved = 0
